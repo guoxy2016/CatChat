@@ -2,3 +2,6 @@
 .idea
 .env
 Pipfile.lock
+data-dev.db
+data.db
+
