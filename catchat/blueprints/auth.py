@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, logout_user, current_user, login_user
 
 from ..extensions import db
-from ..utils import flash_errors
-from ..models import User
 from ..form import LoginForm, RegisterForm
+from ..models import User
+from ..utils import flash_errors
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -20,9 +20,13 @@ def login():
             return render_template('auth/login.html')
         email = form.email.data
         user = User.query.filter_by(email=email).first()
-        if user is not None and user.validate_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            return redirect(url_for('chat.index'))
+        if user is not None:
+            if user._password_hash is None:
+                flash('请使用第三方登陆.')
+                return redirect(url_for('.login'))
+            if user.validate_password(form.password.data):
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('chat.index'))
         flash('用户名或密码错误!')
         return render_template('auth/login.html')
     return render_template('auth/login.html')

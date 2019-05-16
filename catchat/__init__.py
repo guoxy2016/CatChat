@@ -2,10 +2,10 @@ import os
 import random
 
 import click
-from flask import Flask
+from flask import Flask, render_template
 
-from .blueprints import auth_bp, chat_bp
-from .extensions import db, login_manager, csrf, moment
+from .blueprints import *
+from .extensions import db, login_manager, csrf, moment, socketio, oauth
 from .models import Message, User
 
 
@@ -36,11 +36,14 @@ def register_extensions(app=None):
     login_manager.init_app(app)
     csrf.init_app(app)
     moment.init_app(app)
+    socketio.init_app(app)
+    oauth.init_app(app)
 
 
 def register_blueprint(app=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(chat_bp)
+    app.register_blueprint(oauth_bp)
 
 
 def register_shell_contexts(app=None):
@@ -54,7 +57,9 @@ def register_template_contexts(app=None):
 
 
 def register_errors(app=None):
-    pass
+    @app.errorhandler(400)
+    def bad_require(e):
+        return render_template('errors.html', code=e.code, name=e.name, description=e.description)
 
 
 def register_commands(app=None):

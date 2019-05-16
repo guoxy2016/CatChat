@@ -10,6 +10,7 @@ class Base:
 
 
 class Development(Base):
+    DEBUG = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'development-key')
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.getenv('DATABASE_URI', os.path.join(BASEDIR, 'data-dev.db'))
 

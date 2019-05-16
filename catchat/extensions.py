@@ -1,12 +1,16 @@
+from authlib.flask.client import OAuth
 from flask_login import LoginManager, AnonymousUserMixin
 from flask_moment import Moment
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 
 db = SQLAlchemy()
+socketio = SocketIO()
 csrf = CSRFProtect()
 login_manager = LoginManager()
 moment = Moment()
+oauth = OAuth()
 
 login_manager.login_view = 'auth.login'
 
