@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var popupLoading = '<i class="notched circle loading icon green"></i>加载...';
-    // var socket = io();
     var ENTER_KEY = 13;
+    var page = 1;
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -36,6 +36,36 @@ $(document).ready(function () {
             $textarea.val('');
         }
     }
+
+    function load_messages() {
+        var $messages = $('.messages');
+        var position = $messages.scrollTop();
+
+        if (position === 0 && socket.nsp !== '/anonymous') {
+            page++;
+            $('.ui.loader').toggleClass('active');
+            $.ajax({
+                url: messages_url,
+                type: 'GET',
+                data: {page: page},
+                success: function (data) {
+                    var before_height = $messages[0].scrollHeight;
+                    $(data).prependTo('.messages').hide().fadeIn(800);
+                    var after_height = $messages[0].scrollHeight;
+                    flask_moment_render_all();
+                    $messages.scrollTop(after_height - before_height);
+                    $('.ui.loader').toggleClass('active');
+                    activateSemantics();
+                },
+                error: function () {
+                    alert('没有更多消息了.');
+                    $('.ui.loader').toggleClass('active');
+                }
+            });
+        }
+    }
+
+    $('.messages').scroll(load_messages);
 
     // submit message
     $('#message-textarea').on('keydown', new_message.bind(this));

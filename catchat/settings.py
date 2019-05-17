@@ -4,6 +4,7 @@ BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Base:
+    CATCHAT_MESSAGE_PER_PAGE = 30
     CATCHAT_ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
     SECRET_KEY = 'secret-key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -18,6 +19,7 @@ class Development(Base):
 class Testing(Base):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
 
 
 class Production(Base):

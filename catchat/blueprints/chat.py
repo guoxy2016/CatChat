@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, current_app
 from flask_login import current_user
 from flask_socketio import emit
 
@@ -13,9 +13,19 @@ online_users = []
 
 @chat_bp.route('/')
 def index():
-    messages = Message.query.order_by(Message.timestamp.asc())
+    amount = current_app.config['CATCHAT_MESSAGE_PER_PAGE']
+    messages = Message.query.order_by(Message.timestamp.asc())[-amount:]
     user_amount = User.query.count()
     return render_template('chat/index.html', messages=messages, user_amount=user_amount)
+
+
+@chat_bp.route('/messages')
+def get_messages():
+    page = request.args.get('page', 1, int)
+    per_page = current_app.config['CATCHAT_MESSAGE_PER_PAGE']
+    pagination = Message.query.order_by(Message.timestamp.desc()).paginate(page, per_page)
+    messages = pagination.items
+    return render_template('chat/_messages.html', messages=messages[::-1])
 
 
 @chat_bp.route('/anonymous')
