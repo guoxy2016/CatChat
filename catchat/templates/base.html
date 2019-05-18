@@ -26,6 +26,10 @@
             用户资料
         </a>
     {% endif %}
+    <a class="item" id="show-help-modal">
+        <i class="help icon"></i>
+        MD文档帮助
+    </a>
     {% if current_user.is_authenticated %}
         <a class="item" href="{{ url_for('auth.logout') }}">
             <i class="power off icon"></i>
@@ -35,6 +39,87 @@
 </div>
 
 {% block nav %}{% endblock %}
+
+<div class="ui modal small help">
+    <div class="header">Markdown 帮助</div>
+    <div class="content">
+        <section class="modal--default__content" id="modal-body-region">
+            <div>
+                <div class="modal-content">
+                    <table class="ui celled striped table">
+                        <tbody>
+                        <tr>
+                            <td><strong>粗体</strong></td>
+                            <td>**粗体**</td>
+                        </tr>
+                        <tr>
+                            <td><i>斜体</i></td>
+                            <td>*斜体*</td>
+                        </tr>
+                        <tr>
+                            <td>标题</td>
+                            <td>#&nbsp;H1<br> ##&nbsp;H2<br> ###&nbsp;H3<br></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <li>列表</li>
+                            </td>
+                            <td>* 列表</td>
+                        </tr>
+                        <tr>
+                            <td>引用块</td>
+                            <td>&gt; 引用块</td>
+                        </tr>
+                        <tr>
+                            <td><a href="#" target="_blank">连接</a></td>
+                            <td>[title](http://...)</td>
+                        </tr>
+                        <tr>
+                            <td>图片</td>
+                            <td>![alt](http://...)</td>
+                        </tr>
+                        <tr>
+                            <td><code>代码</code></td>
+                            <td>`code`</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="codehilite">
+<pre><span></span><span class="k">def</span> <span class="nf">hello</span><span class="p">():
+&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">return</span> <span class="s2">"Hello World"</span>
+</pre>
+                                </div>
+                            </td>
+                            <td style="line-height: 100%">```python <i style="color: rgba(0,0,0,0.5)">(shift+enter for
+                                line break)</i><br>def hello():<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;return "Hello World"<br>```
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+            </div>
+        </section>
+    </div>
+    <div class="actions">
+        <button class="ui button cancel">关闭</button>
+    </div>
+</div>
+
+<!-- Snippet Modal -->
+<div class="ui modal small snippet">
+    <div class="header">使用代码框</div>
+    <div class="content">
+        <div class="ui form">
+            <textarea id="snippet-textarea" rows="20"></textarea>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="ui button cancel">取消</button>
+        <button class="ui button blue approve" id="snippet-button">发送</button>
+    </div>
+</div>
 
 <!-- Mobile message Modal -->
 <div id="mobile-new-message-modal" class="ui modal small">
@@ -61,7 +146,9 @@
     {{ moment.locale('zh-CN') }}
     <script type="text/javascript">
         var csrf_token = "{{ csrf_token() }}";
-        var messages_url = "{{ url_for('chat.get_messages') }}"
+        var messages_url = "{{ url_for('chat.get_messages') }}";
+        var root_url = "{{ url_for('chat.index') }}";
+        var current_user_id = "{{ current_user.id|default(0) }}"
     </script>
 {% endblock %}
 

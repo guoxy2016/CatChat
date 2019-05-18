@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var popupLoading = '<i class="notched circle loading icon green"></i>加载...';
     var ENTER_KEY = 13;
-    var page = 1;
+    var message_count = 0;
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -11,10 +11,15 @@ $(document).ready(function () {
         }
     });
 
-    function scrollToBottom() {
-        var $messages = $('.messages');
-        $messages.scrollTop($messages[0].scrollHeight);
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!Notification) {
+            alert('你的浏览器不支持桌面提醒!');
+            return;
+        }
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    });
 
     socket.on('new message', function (data) {
         $('.messages').append(data.message_html);
@@ -27,6 +32,22 @@ $(document).ready(function () {
         $('#user-count').html(data.count);
     });
 
+    socket.on('new message', function (data) {
+        message_count++;
+        if (!document.hasFocus()) {
+            document.title = '(' + message_count + ')' + 'CatChat'
+            if (data.user_id !== current_user_id) {
+                messageNotify(data)
+            }
+        }
+    });
+
+    function scrollToBottom() {
+        var $messages = $('.messages');
+        $messages.scrollTop($messages[0].scrollHeight);
+    }
+
+
     function new_message(e) {
         var $textarea = $('#message-textarea');
         var message_body = $textarea.val().trim();
@@ -37,25 +58,27 @@ $(document).ready(function () {
         }
     }
 
+
     function load_messages() {
         var $messages = $('.messages');
         var position = $messages.scrollTop();
+        var $msg = $('.msg-box');
 
         if (position === 0 && socket.nsp !== '/anonymous') {
-            page++;
             $('.ui.loader').toggleClass('active');
             $.ajax({
                 url: messages_url,
                 type: 'GET',
-                data: {page: page},
+                data: {count: $msg.length},
                 success: function (data) {
                     var before_height = $messages[0].scrollHeight;
                     $(data).prependTo('.messages').hide().fadeIn(800);
-                    var after_height = $messages[0].scrollHeight;
                     flask_moment_render_all();
-                    $messages.scrollTop(after_height - before_height);
                     $('.ui.loader').toggleClass('active');
                     activateSemantics();
+                    var after_height = $messages[0].scrollHeight;
+                    $messages.scrollTop(after_height - before_height);
+                    console.log(after_height, before_height)
                 },
                 error: function () {
                     alert('没有更多消息了.');
@@ -64,29 +87,6 @@ $(document).ready(function () {
             });
         }
     }
-
-    $('.messages').scroll(load_messages);
-
-    // submit message
-    $('#message-textarea').on('keydown', new_message.bind(this));
-
-    // open message modal on mobile
-    $("#message-textarea").focus(function () {
-        if (screen.width < 600) {
-            $('#mobile-new-message-modal').modal('show');
-            $('#mobile-message-textarea').focus()
-        }
-    });
-
-
-    $('#send-button').on('click', function () {
-        var $mobile_textarea = $('#mobile-message-textarea');
-        var message = $mobile_textarea.val();
-        if (message.trim() !== '') {
-            socket.emit('new message', message);
-            $mobile_textarea.val('')
-        }
-    });
 
     function activateSemantics() {
         $('.ui.dropdown').dropdown();
@@ -98,6 +98,14 @@ $(document).ready(function () {
 
         $('#toggle-sidebar').on('click', function () {
             $('.menu.sidebar').sidebar('setting', 'transition', 'overlay').sidebar('toggle');
+        });
+
+        $('#show-help-modal').on('click', function () {
+            $('.ui.modal.help').modal({blurring: true}).modal('show');
+        });
+
+        $('#show-snippet-modal').on('click', function () {
+            $('.ui.modal.snippet').modal({blurring: true}).modal('show');
         });
 
         $('.pop-card').popup({
@@ -117,7 +125,7 @@ $(document).ready(function () {
                 }).done(function (data) {
                     popup.html(data);
                 }).fail(function () {
-                    popup.html('加载失败.');
+                    popup.html('Failed to load profile.');
                 });
             }
         });
@@ -127,6 +135,57 @@ $(document).ready(function () {
         activateSemantics();
         scrollToBottom();
     }
+
+    function messageNotify(data) {
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        } else {
+            var notification = new Notification("消息来自" + data.nickname, {
+                icon: data.gravatar,
+                body: data.message_body.replace(/(<([^>]+)>)/ig, ""),
+            });
+            notification.onclick = function () {
+                window.open(root_url);
+            };
+            setTimeout(function () { notification.close() }, 4000)
+        }
+    }
+
+    $('#snippet-button').on('click', function () {
+        var $snippet_textarea = $('#snippet-textarea');
+        var message = $snippet_textarea.val();
+        if (message.trim() !== '') {
+            socket.emit('new message', message);
+            $snippet_textarea.val('')
+        }
+    });
+
+    $('.messages').scroll(load_messages);
+
+    // submit message
+    $('#message-textarea').on('keydown', new_message.bind(this));
+
+    // open message modal on mobile
+    $("#message-textarea").focus(function () {
+        if (screen.width < 600) {
+            $('#mobile-new-message-modal').modal('show');
+            $('#mobile-message-textarea').focus()
+        }
+    });
+
+    $('#send-button').on('click', function () {
+        var $mobile_textarea = $('#mobile-message-textarea');
+        var message = $mobile_textarea.val();
+        if (message.trim() !== '') {
+            socket.emit('new message', message);
+            $mobile_textarea.val('')
+        }
+    });
+
+    $(window).focus(function () {
+        message_count = 0;
+        document.title = 'CatChat'
+    });
 
     init();
 

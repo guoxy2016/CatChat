@@ -17,6 +17,9 @@ python-dotenv = "*"
 flask-socketio = "*"
 eventlet = "*"
 authlib = "*"
+markdown = "*"
+bleach = "*"
+pygments = "*"
 
 [requires]
 python_version = "3.7"

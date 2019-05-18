@@ -5,7 +5,7 @@ from flask_socketio import emit
 from ..extensions import db, socketio
 from ..form import ProfileForm
 from ..models import Message, User
-from ..utils import flash_errors
+from ..utils import flash_errors, to_html
 
 chat_bp = Blueprint('chat', __name__)
 online_users = []
@@ -21,10 +21,14 @@ def index():
 
 @chat_bp.route('/messages')
 def get_messages():
-    page = request.args.get('page', 1, int)
+    # page = request.args.get('page', 1, int)
+    count = request.args.get('count', 0, int)
     per_page = current_app.config['CATCHAT_MESSAGE_PER_PAGE']
-    pagination = Message.query.order_by(Message.timestamp.desc()).paginate(page, per_page)
-    messages = pagination.items
+    # pagination = Message.query.order_by(Message.timestamp.desc()).paginate(page, per_page)
+    # messages = pagination.items
+    messages = Message.query.order_by(Message.timestamp.desc())[count: count + per_page]
+    if not messages:
+        return '', 404
     return render_template('chat/_messages.html', messages=messages[::-1])
 
 
@@ -57,11 +61,16 @@ def profile():
 
 @socketio.on('new message')
 def new_message(message_body):
+    message_body = to_html(message_body)
     message = Message(body=message_body, author=current_user._get_current_object())
     db.session.add(message)
     db.session.commit()
     emit('new message',
-         {'message_html': render_template('chat/_message.html', message=message)},
+         {'message_html': render_template('chat/_message.html', message=message),
+          'message_body': message_body,
+          'gravatar': current_user.gravatar,
+          'nickname': current_user.nickname,
+          'user_id': current_user.id},
          broadcast=True)
 
 
