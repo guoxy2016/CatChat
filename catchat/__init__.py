@@ -44,6 +44,7 @@ def register_blueprint(app=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(oauth_bp)
+    app.register_blueprint(admin_bp)
 
 
 def register_shell_contexts(app=None):

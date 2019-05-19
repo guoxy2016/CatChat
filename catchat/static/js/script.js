@@ -11,16 +11,6 @@ $(document).ready(function () {
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        if (!Notification) {
-            alert('你的浏览器不支持桌面提醒!');
-            return;
-        }
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-    });
-
     socket.on('new message', function (data) {
         $('.messages').append(data.message_html);
         flask_moment_render_all();
@@ -35,7 +25,7 @@ $(document).ready(function () {
     socket.on('new message', function (data) {
         message_count++;
         if (!document.hasFocus()) {
-            document.title = '(' + message_count + ')' + 'CatChat'
+            document.title = '(' + message_count + ')' + 'CatChat';
             if (data.user_id !== current_user_id) {
                 messageNotify(data)
             }
@@ -78,7 +68,6 @@ $(document).ready(function () {
                     activateSemantics();
                     var after_height = $messages[0].scrollHeight;
                     $messages.scrollTop(after_height - before_height);
-                    console.log(after_height, before_height)
                 },
                 error: function () {
                     alert('没有更多消息了.');
@@ -125,13 +114,29 @@ $(document).ready(function () {
                 }).done(function (data) {
                     popup.html(data);
                 }).fail(function () {
-                    popup.html('Failed to load profile.');
+                    popup.html('服务器错误, 请稍候重试.');
                 });
             }
         });
     }
 
     function init() {
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!Notification) {
+                alert('你的浏览器不支持桌面提醒!');
+                return;
+            }
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+        });
+
+        $(window).focus(function () {
+            message_count = 0;
+            document.title = 'CatChat'
+        });
+
         activateSemantics();
         scrollToBottom();
     }
@@ -147,7 +152,9 @@ $(document).ready(function () {
             notification.onclick = function () {
                 window.open(root_url);
             };
-            setTimeout(function () { notification.close() }, 4000)
+            setTimeout(function () {
+                notification.close()
+            }, 4000)
         }
     }
 
@@ -182,9 +189,47 @@ $(document).ready(function () {
         }
     });
 
-    $(window).focus(function () {
-        message_count = 0;
-        document.title = 'CatChat'
+    // quote message
+    $('.quote-button').on('click', function () {
+        var $textarea = $('#message-textarea');
+        var message = $(this).parent().parent().parent().find('.message-body').text();
+        $textarea.val('> ' + message + '\n\n');
+        $textarea.val($textarea.val()).focus()
+    });
+
+    $('.delete-button').on('click', function () {
+        var $this = $(this);
+        if (!confirm('真的要删除吗?')) {
+            return;
+        }
+        $.ajax({
+            type: 'DELETE',
+            url: $this.data('href'),
+            success: function () {
+                $this.parent().parent().parent().remove();
+            },
+            error: function () {
+                alert('服务器错误')
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-user-button', function () {
+        var $this = $(this);
+        if (!confirm('真的要删除吗?')) {
+            return;
+        }
+        $.ajax({
+            type: 'DELETE',
+            url: $this.data('href'),
+            success: function () {
+                alert('用户被删除了');
+                window.location.reload()
+            },
+            error: function () {
+                alert('服务器错误')
+            }
+        });
     });
 
     init();

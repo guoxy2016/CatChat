@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, current_app, abort
 from flask_login import current_user
 from flask_socketio import emit
 
@@ -57,6 +57,16 @@ def profile():
         db.session.commit()
         return redirect(url_for('.index'))
     return render_template('chat/profile.html')
+
+
+@chat_bp.route('/message/delete/<message_id>', methods=['DELETE'])
+def delete_message(message_id):
+    message = Message.query.get_or_404(message_id)
+    if current_user != message.author and not current_user.is_admin:
+        abort(403)
+    db.session.delete(message)
+    db.session.commit()
+    return '', 204
 
 
 @socketio.on('new message')
