@@ -1,1 +1,8 @@
-同一ip地址下不同端口之间的session会相互覆盖, 考虑使用reids等内容作共享session.可以解决
+执行方法
+~~~
+pip install pipenv
+pipenv install --dev
+pipenv shell
+flask forge
+python run.py
+~~~
