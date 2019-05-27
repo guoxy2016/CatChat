@@ -60,7 +60,23 @@ def register_template_contexts(app=None):
 def register_errors(app=None):
     @app.errorhandler(400)
     def bad_require(e):
-        return render_template('errors.html', code=e.code, name=e.name, description=e.description)
+        return render_template('errors.html', code=e.code, name=e.name, description=e.description), 400
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors.html', code=e.code, name=e.name, description=e.description), 403
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template('errors.html', code=e.code, name=e.name, description=e.description), 404
+
+    @app.errorhandler(500)
+    def server_error(_):
+        return render_template('errors.html', code=500, name='Internal Server Error', description=(
+            "The server encountered an internal error and was unable to"
+            " complete your request. Either the server is overloaded or"
+            " there is an error in the application."
+        )), 500
 
 
 def register_commands(app=None):

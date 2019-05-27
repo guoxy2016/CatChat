@@ -11,7 +11,7 @@ from .extensions import db
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(256), unique=True, nullable=False)
-    _password_hash = db.Column(db.String(128), nullable=False)
+    _password_hash = db.Column(db.String(128))
     _email_hash = db.Column(db.String(128))
     nickname = db.Column(db.String(30), nullable=True)
     website = db.Column(db.String(255))

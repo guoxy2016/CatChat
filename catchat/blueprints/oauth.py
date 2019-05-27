@@ -20,14 +20,10 @@ github = oauth.register(
 
 providers = {
     'github': github,
-    # 'google': google,
-    # 'twitter': twitter
 }
 
 profile_endpoints = {
     'github': 'user',
-    # 'google': 'userinfo',
-    # 'twitter': 'account/verify_credentials.json?include_email=true'
 }
 
 
@@ -58,7 +54,6 @@ def oauth_callback(provider_name):
     profile_endpoint = profile_endpoints[provider_name]
     response = provider.get(profile_endpoint)
     response = response.json()
-    # if provider_name == 'github':
     username = response.get('name')
     website = response.get('blog')
     github = response.get('html_url')

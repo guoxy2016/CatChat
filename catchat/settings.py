@@ -5,7 +5,7 @@ BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Base:
     CATCHAT_MESSAGE_PER_PAGE = 30
-    CATCHAT_ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+    CATCHAT_ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@catchat.com')
     SECRET_KEY = 'secret-key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

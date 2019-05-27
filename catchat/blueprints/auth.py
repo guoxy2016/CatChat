@@ -17,7 +17,7 @@ def login():
         form = LoginForm()
         if not form.validate():
             flash_errors(form)
-            return render_template('auth/login.html')
+            return redirect(url_for('.login'))
         email = form.email.data
         user = User.query.filter_by(email=email).first()
         if user is not None:
@@ -28,7 +28,7 @@ def login():
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for('chat.index'))
         flash('用户名或密码错误!')
-        return render_template('auth/login.html')
+        return redirect(url_for('.login'))
     return render_template('auth/login.html')
 
 
